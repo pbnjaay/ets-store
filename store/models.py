@@ -4,13 +4,17 @@ from django.db import models
 class Product(models.Model):
     title = models.CharField(max_length=255)
     price_supplier = models.IntegerField()
-    slug = models.SlugField()
     price_customer = models.IntegerField()
     inventory = models.IntegerField()
+    slug = models.SlugField()
     last_update = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.title
 
     class Meta:
         indexes = [models.Index(fields=['title'])]
+        ordering = ['title']
 
 
 class Customer(models.Model):
@@ -19,6 +23,9 @@ class Customer(models.Model):
     phone_number = models.CharField(max_length=15)
     birth_date = models.DateField(null=True)
     email = models.EmailField(null=True, unique=True)
+
+    def __str__(self) -> str:
+        return f'{self.first_name} {self.last_name}'
 
     class Meta:
         indexes = [models.Index(fields=['first_name', 'last_name'])]
