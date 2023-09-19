@@ -8,7 +8,7 @@ from store.models import Customer, Product, Subscription
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['title', 'price_supplier',
-                    'price_customer', 'inventory_status']
+                    'price_consumer', 'inventory_status']
     list_per_page = 10
 
     @admin.display(ordering='inventory')
