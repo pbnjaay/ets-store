@@ -26,7 +26,7 @@ class Customer(models.Model):
     phone_number = models.CharField(max_length=15)
     birth_date = models.DateField(null=True)
     email = models.EmailField(null=True, unique=True)
-    is_consumer = models.BooleanField()
+    is_consumer = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
@@ -36,7 +36,7 @@ class Customer(models.Model):
 
 
 class Order(models.Model):
-    placed_at = models.DateField(auto_now_add=True)
+    placed_at = models.DateField()
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
 
     class Meta:

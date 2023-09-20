@@ -99,14 +99,24 @@ class CreateOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['customer', 'items']
+        fields = ['customer', 'items', 'placed_at']
 
     def save(self, **kwargs):
         with transaction.atomic():
-            customer = self.validated_data['customer']
-            order = Order.objects.create(
-                customer_id=customer.id
-            )
+            validated_data = self.validated_data
+
+            customer = validated_data['customer']
+
+            order = Order.objects \
+                .filter(customer=customer, placed_at=validated_data['placed_at']) \
+                .first()
+
+            if order is None:
+                order = Order.objects.create(
+                    customer_id=customer.id,
+                    placed_at=validated_data['placed_at']
+                )
+
             order_items = [
                 OrderItem(
                     order=order,
@@ -114,7 +124,7 @@ class CreateOrderSerializer(serializers.ModelSerializer):
                     unit_price=item['product'].price_consumer if customer.is_consumer else item['product'].price_supplier,
                     quantity=item['quantity']
                 )
-                for item in self.validated_data['items']
+                for item in validated_data['items']
             ]
 
             OrderItem.objects.bulk_create(order_items)
