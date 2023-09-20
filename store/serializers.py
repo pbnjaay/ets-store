@@ -5,12 +5,23 @@ from store.models import (Customer, Instalment, Order, OrderItem, Product,
                           Subscription)
 
 
-class ProductSerializer(serializers.ModelSerializer):
+class BaseProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'title', 'price_supplier', 'price_consumer']
 
+
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'title', 'inventory', 'slug',
                   'price_supplier', 'price_consumer']
+
+
+class BaseCustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = ['id', 'first_name', 'last_name']
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -29,18 +40,12 @@ class CreateSubscriptionSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    customer = BaseCustomerSerializer()
+    product = BaseProductSerializer()
 
     class Meta:
         model = Subscription
         fields = ['id', 'quantity', 'customer', 'product']
-
-    customer = serializers.PrimaryKeyRelatedField(
-        queryset=Subscription.objects.all()
-    )
-    product = serializers.HyperlinkedRelatedField(
-        view_name='product-detail',
-        queryset=Product.objects.all()
-    )
 
 
 class CreateOrderItemSeriazer(serializers.ModelSerializer):
@@ -66,7 +71,7 @@ class CreateOrderItemSeriazer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     unit_price = serializers.IntegerField(read_only=True)
-    product = ProductSerializer()
+    product = BaseProductSerializer()
 
     class Meta:
         model = OrderItem
@@ -115,12 +120,6 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             OrderItem.objects.bulk_create(order_items)
 
             return order
-
-
-class BaseCustomerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customer
-        fields = ['id', 'first_name', 'last_name']
 
 
 class InstalmentSerializer(serializers.ModelSerializer):
