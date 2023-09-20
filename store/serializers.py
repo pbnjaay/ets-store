@@ -21,7 +21,7 @@ class CustomerSerializer(serializers.ModelSerializer):
                   'is_consumer', 'email', 'phone_number', 'birth_date']
 
 
-class SubscriptionCreateSerializer(serializers.ModelSerializer):
+class CreateSubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
@@ -117,8 +117,21 @@ class CreateOrderSerializer(serializers.ModelSerializer):
             return order
 
 
-class InstalmentSerializer(serializers.ModelSerializer):
+class BaseCustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = ['id', 'first_name', 'last_name']
 
+
+class InstalmentSerializer(serializers.ModelSerializer):
+    customer = BaseCustomerSerializer()
+
+    class Meta:
+        model = Instalment
+        fields = ['id', 'customer', 'amount', 'date']
+
+
+class CreateInstalmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instalment
         fields = ['customer', 'amount', 'date']

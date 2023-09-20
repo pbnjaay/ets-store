@@ -8,10 +8,10 @@ from store.pagination import DefaultPagination
 
 from .models import (Customer, Instalment, Order, OrderItem, Product,
                      Subscription)
-from .serializers import (CreateOrderItemSeriazer, CreateOrderSerializer,
+from .serializers import (CreateInstalmentSerializer, CreateOrderItemSeriazer, CreateOrderSerializer,
                           CustomerSerializer, InstalmentSerializer,
                           OrderItemSerializer, OrderSerializer,
-                          ProductSerializer, SubscriptionCreateSerializer,
+                          ProductSerializer, CreateSubscriptionSerializer,
                           SubscriptionSerializer, UpdateOrderSerializer)
 
 
@@ -49,13 +49,13 @@ class SubscriptionViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return SubscriptionSerializer
-        return SubscriptionCreateSerializer
+        return CreateSubscriptionSerializer
 
     def get_serializer_context(self):
         return {'request': self.request}
 
     def create(self, request):
-        serializer = SubscriptionCreateSerializer(data=request.data)
+        serializer = CreateSubscriptionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         customer_id = serializer.validated_data.get('customer').id
@@ -87,15 +87,16 @@ class OrderViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return OrderSerializer
-        elif self.request.method == 'PUT':
-            return UpdateOrderSerializer
-        return CreateOrderSerializer
+        elif self.request.method == 'POST':
+            return CreateOrderSerializer
+        return UpdateOrderSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = CreateOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
         serializer = OrderSerializer(order)
+
         return Response(serializer.data)
 
 
@@ -159,7 +160,11 @@ class OrderItemViewSet(ModelViewSet):
 
 class InstalmentViewSet(ModelViewSet):
     queryset = Instalment.objects.select_related('customer').all()
-    serializer_class = InstalmentSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['customer']
     pagination_class = DefaultPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return InstalmentSerializer
+        return CreateInstalmentSerializer
