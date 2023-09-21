@@ -54,7 +54,6 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
     unit_price = models.PositiveIntegerField()
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
-    # datetime
 
 
 class Instalment(models.Model):
