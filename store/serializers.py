@@ -32,7 +32,7 @@ class CustomerSerializer(serializers.ModelSerializer):
                   'is_consumer', 'email', 'phone_number', 'birth_date']
 
 
-class CreateSubscriptionSerializer(serializers.ModelSerializer):
+class SubscriptionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
@@ -48,7 +48,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         fields = ['id', 'quantity', 'customer', 'product']
 
 
-class CreateOrderItemSeriazer(serializers.ModelSerializer):
+class OrderItemCreateSeriazer(serializers.ModelSerializer):
     unit_price = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -87,15 +87,15 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'placed_at', 'customer', 'items']
 
 
-class UpdateOrderSerializer(serializers.ModelSerializer):
+class OrderUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
         fields = ['customer']
 
 
-class CreateOrderSerializer(serializers.ModelSerializer):
-    items = CreateOrderItemSeriazer(many=True)
+class OrderCreateSerializer(serializers.ModelSerializer):
+    items = OrderItemCreateSeriazer(many=True)
 
     class Meta:
         model = Order
@@ -121,7 +121,11 @@ class CreateOrderSerializer(serializers.ModelSerializer):
                 OrderItem(
                     order=order,
                     product=item['product'],
-                    unit_price=item['product'].price_consumer if customer.is_consumer else item['product'].price_supplier,
+
+                    unit_price=item['product'].price_consumer
+                    if customer.is_consumer
+                    else item['product'].price_supplier,
+
                     quantity=item['quantity']
                 )
                 for item in validated_data['items']
@@ -140,7 +144,7 @@ class InstalmentSerializer(serializers.ModelSerializer):
         fields = ['id', 'customer', 'amount', 'date']
 
 
-class CreateInstalmentSerializer(serializers.ModelSerializer):
+class InstalmentCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instalment
         fields = ['customer', 'amount', 'date']
