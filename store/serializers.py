@@ -25,7 +25,6 @@ class BaseCustomerSerializer(serializers.ModelSerializer):
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Customer
         fields = ['id', 'first_name', 'last_name',
@@ -50,12 +49,17 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 class OrderItemCreateSeriazer(serializers.ModelSerializer):
     unit_price = serializers.IntegerField(read_only=True)
+    quantity_subscribed = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'quantity', 'unit_price', 'product']
+        fields = ['id', 'quantity', 'unit_price',
+                  'product', 'quantity_subscribed', 'retour']
 
     def save(self, **kwargs):
+        subscription = Subscription.objects \
+            .filter(customer_id=self.context['customer_id'], product_id=self.validated_data['product'].id) \
+            .first()
         self.instance = OrderItem.objects.create(
             order_id=self.context['order_id'],
 
@@ -64,34 +68,60 @@ class OrderItemCreateSeriazer(serializers.ModelSerializer):
             else self.validated_data['product'].price_supplier,
 
             product=self.validated_data['product'],
-            quantity=self.validated_data['quantity']
+            quantity=self.validated_data['quantity'],
+            quantity_subscribed=subscription.quantity if subscription else 0,
+            retour=self.validated_data['retour']
         )
         return self.instance
+
+
+class OrderItemUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['quantity', 'retour']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     unit_price = serializers.IntegerField(read_only=True)
     product = BaseProductSerializer()
+    total_price = serializers.SerializerMethodField()
+
+    def get_total_price(self, item: OrderItem):
+        return item.unit_price * (item.quantity - item.quantity_subscribed - item.retour)
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'quantity', 'unit_price', 'product']
+        fields = ['id', 'quantity', 'unit_price',
+                  'product', 'quantity_subscribed', 'retour', 'total_price']
 
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     customer = CustomerSerializer()
+    total_price = serializers.SerializerMethodField()
+    amount_remaining = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'placed_at', 'customer', 'items']
+        fields = ['id', 'placed_at', 'customer',
+                  'items', 'amount_paid', 'total_price', 'amount_remaining']
+
+    def get_total_price(self, order: Order):
+        return sum([
+            item.unit_price *
+            (item.quantity - item.quantity_subscribed - item.retour)
+            for item in order.items.all()
+        ])
+
+    def get_amount_remaining(self, order: Order):
+        return self.get_total_price(order) - order.amount_paid
 
 
 class OrderUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['customer']
+        fields = ['amount_paid']
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
@@ -117,19 +147,25 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                     placed_at=validated_data['placed_at']
                 )
 
-            order_items = [
-                OrderItem(
-                    order=order,
-                    product=item['product'],
+            order_items = []
+            for item in validated_data['items']:
+                subscription = Subscription.objects \
+                    .filter(customer_id=customer.id, product_id=item['product'].id) \
+                    .first()
+                order_items.append(
+                    OrderItem(
+                        order=order,
+                        product=item['product'],
 
-                    unit_price=item['product'].price_consumer
-                    if customer.is_consumer
-                    else item['product'].price_supplier,
+                        unit_price=item['product'].price_consumer
+                        if customer.is_consumer
+                        else item['product'].price_supplier,
 
-                    quantity=item['quantity']
+                        quantity=item['quantity'],
+                        quantity_subscribed=subscription.quantity if subscription else 0,
+                        retour=item.retour
+                    )
                 )
-                for item in validated_data['items']
-            ]
 
             OrderItem.objects.bulk_create(order_items)
 

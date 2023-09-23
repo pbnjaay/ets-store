@@ -27,6 +27,7 @@ class Customer(models.Model):
     birth_date = models.DateField(null=True)
     email = models.EmailField(null=True, unique=True)
     is_consumer = models.BooleanField(default=True)
+    image = models.ImageField(upload_to='store/images', null=True)
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
@@ -38,6 +39,7 @@ class Customer(models.Model):
 class Order(models.Model):
     placed_at = models.DateField()
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
+    amount_paid = models.PositiveIntegerField(default=0)
 
     class Meta:
         constraints = [
@@ -54,6 +56,8 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(validators=[MinValueValidator(1)])
     unit_price = models.PositiveIntegerField()
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity_subscribed = models.PositiveIntegerField()
+    retour = models.PositiveBigIntegerField(default=0)
 
 
 class Instalment(models.Model):

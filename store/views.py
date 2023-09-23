@@ -12,7 +12,7 @@ from .models import (Customer, Instalment, Order, OrderItem, Product,
                      Subscription)
 from .serializers import (CustomerSerializer, InstalmentCreateSerializer,
                           InstalmentSerializer, OrderCreateSerializer,
-                          OrderItemCreateSeriazer, OrderItemSerializer,
+                          OrderItemCreateSeriazer, OrderItemSerializer, OrderItemUpdateSerializer,
                           OrderSerializer, OrderUpdateSerializer,
                           ProductSerializer, SubscriptionCreateSerializer,
                           SubscriptionSerializer)
@@ -37,14 +37,16 @@ class CostumerViewSet(ModelViewSet):
 
 
 class SubscriptionViewSet(ModelViewSet):
-
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['customer', 'product']
     pagination_class = DefaultPagination
     permission_classes = [IsAdminUserOrReadOnly]
 
     def get_queryset(self):
-        queryset = Subscription.objects.all()
+        queryset = Subscription.objects \
+            .select_related('product') \
+            .select_related('customer').all()
+
         product_id = self.request.query_params.get('product_id')
 
         if product_id is not None:
@@ -125,13 +127,16 @@ class OrderItemViewSet(ModelViewSet):
                 data=request.data,
                 context={
                     'order_id': self.kwargs['order_pk'],
-                    'is_consumer': order.customer.is_consumer
+                    'is_consumer': order.customer.is_consumer,
+                    'customer_id': order.customer.id
                 }
             )
             serializer.is_valid(raise_exception=True)
             order_item = serializer.save()
             serializer = OrderItemSerializer(order_item)
+
             return Response(serializer.data)
+
         return Response(
             {'detail': 'This order with the given id does not exist'},
             status=status.HTTP_404_NOT_FOUND
@@ -155,13 +160,12 @@ class OrderItemViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return OrderItemSerializer
-        return OrderItemCreateSeriazer
+        elif self.request.method == 'POST':
+            return OrderItemCreateSeriazer
+        return OrderItemUpdateSerializer
 
     def get_queryset(self):
         return OrderItem.objects.filter(order_id=self.kwargs['order_pk']).all()
-
-    def get_serializer_context(self):
-        return {"order_id": self.kwargs['order_pk']}
 
 
 class InstalmentViewSet(ModelViewSet):
