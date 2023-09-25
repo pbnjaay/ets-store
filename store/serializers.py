@@ -28,7 +28,7 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ['id', 'first_name', 'last_name',
-                  'is_consumer', 'email', 'phone_number', 'birth_date']
+                  'is_consumer', 'email', 'phone_number', 'birth_date', 'image']
 
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):

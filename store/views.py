@@ -6,16 +6,16 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from store.pagination import DefaultPagination
-from store.permissions import IsAdminUserOrReadOnly
+from store.permissions import IsAdminOrReadOnly
 
 from .models import (Customer, Instalment, Order, OrderItem, Product,
                      Subscription)
 from .serializers import (CustomerSerializer, InstalmentCreateSerializer,
                           InstalmentSerializer, OrderCreateSerializer,
-                          OrderItemCreateSeriazer, OrderItemSerializer, OrderItemUpdateSerializer,
-                          OrderSerializer, OrderUpdateSerializer,
-                          ProductSerializer, SubscriptionCreateSerializer,
-                          SubscriptionSerializer)
+                          OrderItemCreateSeriazer, OrderItemSerializer,
+                          OrderItemUpdateSerializer, OrderSerializer,
+                          OrderUpdateSerializer, ProductSerializer,
+                          SubscriptionCreateSerializer, SubscriptionSerializer)
 
 
 class ProductViewSet(ModelViewSet):
@@ -24,7 +24,7 @@ class ProductViewSet(ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['title']
     pagination_class = DefaultPagination
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CostumerViewSet(ModelViewSet):
@@ -33,14 +33,14 @@ class CostumerViewSet(ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['first_name', 'last_name']
     pagination_class = DefaultPagination
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class SubscriptionViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['customer', 'product']
     pagination_class = DefaultPagination
-    permission_classes = [IsAdminUserOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = Subscription.objects \

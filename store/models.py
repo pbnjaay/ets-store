@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 
+from store.validators import validate_file_size
+
 
 class Product(models.Model):
     title = models.CharField(max_length=255)
@@ -27,7 +29,8 @@ class Customer(models.Model):
     birth_date = models.DateField(null=True)
     email = models.EmailField(null=True, unique=True)
     is_consumer = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='store/images', null=True)
+    image = models.ImageField(upload_to='store/images',
+                              null=True, validators=[validate_file_size])
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
