@@ -1,2 +1,7 @@
+*.log
+*.pot
+*.pyc
+__pycache__
+.pytest_cache
 .vscode
 db.sqlite3
