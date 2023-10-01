@@ -23,7 +23,6 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [SearchFilter]
     search_fields = ['title']
-    pagination_class = DefaultPagination
     permission_classes = [IsAdminOrReadOnly]
 
 
@@ -32,14 +31,12 @@ class CostumerViewSet(ModelViewSet):
     serializer_class = CustomerSerializer
     filter_backends = [SearchFilter]
     search_fields = ['first_name', 'last_name']
-    pagination_class = DefaultPagination
     permission_classes = [IsAdminOrReadOnly]
 
 
 class SubscriptionViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['customer', 'product']
-    pagination_class = DefaultPagination
     permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):

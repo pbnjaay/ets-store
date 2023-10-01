@@ -11,8 +11,9 @@ class Product(models.Model):
     price_consumer = models.PositiveIntegerField(
         validators=[MinValueValidator(1)])
     inventory = models.PositiveIntegerField()
-    slug = models.SlugField()
     last_update = models.DateTimeField(auto_now=True)
+    image = models.ImageField(upload_to='store/image',
+                              null=True, validators=[validate_file_size])
 
     def __str__(self) -> str:
         return self.title

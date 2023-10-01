@@ -14,6 +14,7 @@ djoser = "*"
 djangorestframework-simplejwt = "*"
 pillow = "*"
 celery = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 pytest = "*"

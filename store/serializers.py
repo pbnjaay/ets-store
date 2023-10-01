@@ -14,8 +14,8 @@ class BaseProductSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'title', 'inventory', 'slug',
-                  'price_supplier', 'price_consumer']
+        fields = ['id', 'title', 'inventory',
+                  'price_supplier', 'price_consumer', 'image']
 
 
 class BaseCustomerSerializer(serializers.ModelSerializer):

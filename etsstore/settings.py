@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from corsheaders.defaults import default_methods
 from datetime import timedelta
 from pathlib import Path
 import os
@@ -45,10 +46,12 @@ INSTALLED_APPS = [
     'djoser',
     'playground',
     'store',
-    'core'
+    'core',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -162,3 +165,12 @@ DJOSER = {
         'current_user': 'core.serializers.UserSerializer',
     },
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:5173',
+    'http://localhost:5173',
+]
+
+CORS_ALLOW_METHODS = (
+    *default_methods,
+)
